@@ -71,11 +71,28 @@
             color: #333;
             margin-bottom: 20px;
         }
+        .links-list {
+            text-align: left;
+            margin-top: 20px;
+            font-size: 16px;
+            color: #333;
+        }
+        .links-list a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        .links-list a:hover {
+            text-decoration: underline;
+        }
+        #daily-quote {
+            margin-top: 20px;
+            font-style: italic;
+            color: #777;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Chatbox feletti üzenet -->
     <div id="header-message">Mielőtt felhívnál, kérdezd meg az AI-t, amit erre az esetre hoztam létre :)</div>
 
     <div id="chat-container">
@@ -83,6 +100,7 @@
         <input type="text" id="user-input" placeholder="Kérdezz bármit drága :)" />
         <button id="send-btn">Küldés</button>
         <div id="counter"></div>
+        <div id="daily-quote"></div> <!-- Napi útmutatás -->
     </div>
 
     <script>
@@ -90,8 +108,21 @@
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
         const counter = document.getElementById('counter');
+        const dailyQuote = document.getElementById('daily-quote');
 
-        // Üzenet hozzáadása a chathez
+        const koans = [
+            "A szél fúj, de mi az, amit nem érezhetsz?",
+            "Mi a hangja annak a fának, amelyik leesik, ha nincs senki a közelben, hogy meghallja?",
+            "Ha a fa az erdőben eldől, de nincs ott senki, aki hallja, vajon zajt csinál?",
+            "A tó vize tükrözi az eget. De mi van, ha a víz teljesen nyugodt?",
+            "A mester megkérdezte a tanítványt: 'Mi a Buddha?' A tanítvány válaszolt: 'A semmi.' Mester: 'Hogyan lehet ez?'",
+            "Egy ember az erdőben bolyongott, mikor egy másik emberre talált, aki az utat keresett. 'Te is utat keresel?' - kérdezte. 'Igen.' 'Miért keresed?' 'Mert nem találom.' 'Akkor meg miért keresel?'",
+            "Mi történik, amikor a pohár tele van vízzel és a víz nem önthető ki?",
+            "A mester azt mondta: 'Amikor a víz üres, akkor mi lesz az?'",
+            "Mi a hangja annak, amikor a tükörben meglátod saját magad?",
+            "Ha a szél fúj a hegytetőn, mit érez a fa?"
+        ];
+
         function appendMessage(message, sender = 'user') {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', sender);
@@ -100,7 +131,6 @@
             chatBox.scrollTop = chatBox.scrollHeight;  // Görgetés az új üzenethez
         }
 
-        // A napok számolása 2024.08.15. óta
         function updateDayCounter() {
             const startDate = new Date('2024-08-15');
             const currentDate = new Date();
@@ -109,49 +139,40 @@
             counter.textContent = `${diffDays} napja nincs más, aki eszedbe jutna, ha kérdezni akarsz valamit.`;
         }
 
-        // Az üzenet, amit a bot küld
-        function sendBotResponse() {
-            const responseMessage = `
-                Szia Dorka! Bár jelenleg még nem elérhető az AI (Így is feleslegesen sokat foglalkoztam ezzel), itt van pár oldal, ami minden problémádra megoldás lehet: 
-                
-                - [www.google.com](https://www.google.com)
-                - [www.chatgpt.com](https://www.chatgpt.com)
-                - [www.reddit.com](https://www.reddit.com)
-                - [www.stackoverflow.com](https://www.stackoverflow.com)
-                - [www.quora.com](https://www.quora.com)
-                - [www.wikipedia.org](https://www.wikipedia.org)
-                - [www.howtogeek.com](https://www.howtogeek.com)
-                - [www.medium.com](https://www.medium.com)
-                
-                További szép napot, Szius! 😊
-            `;
-            appendMessage(responseMessage, 'bot');  // Bot válasz
+        function getRandomKoan() {
+            const randomIndex = Math.floor(Math.random() * koans.length);
+            return koans[randomIndex];
         }
 
-        // Eseménykezelő a felhasználó üzenetének elküldéséhez
-        sendBtn.addEventListener('click', () => {
-            const userMessage = userInput.value.trim();
-            if (userMessage) {
-                appendMessage(userMessage, 'user');  // Felhasználó üzenete
-                userInput.value = '';  // Üzenetmező törlése
-                sendBotResponse();  // Bot válasz
-                updateDayCounter();  // Napok frissítése
-            }
+        function sendBotResponse() {
+            const responseMessage = `
+                Szia Dorka! Bár jelenleg még nem elérhető az AI (Így is feleslegesen sokat foglalkoztam ezzel), itt van pár oldal, ami minden problémádra megoldás lehet:
+
+                <div class="links-list">
+                    <p><a href="https://www.google.com" target="_blank">Google</a> - Ezt arra tudod használni, hogy bármit kereshetsz az interneten, gyors válaszokért.</p>
+                    <p><a href="https://www.chatgpt.com" target="_blank">ChatGPT</a> - AI segít válaszolni kérdéseidre és segíteni a problémáid megoldásában.</p>
+                    <p><a href="https://www.reddit.com" target="_blank">Reddit</a> - A legnagyobb fórum, ahol különböző témákban beszélgethetsz.</p>
+                </div>
+
+                További szép napot, Szius! 😊
+
+                <div id="daily-quote">
+                    <strong>Napi útmutatás Lászlótól:</strong>
+                    <p>"${getRandomKoan()}"</p>
+                </div>
+            `;
+            appendMessage(responseMessage, 'bot');
+        }
+
+        sendBtn.addEventListener('click', function () {
+            const userMessage = userInput.value;
+            appendMessage(userMessage, 'user');
+            userInput.value = '';
+            sendBotResponse();
         });
 
-        // Enter gomb megnyomása
-        userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendBtn.click();
-            }
-        });
-
-        // Első napok számolása frissítése
-        updateDayCounter();
-
+        updateDayCounter();  // Az oldal betöltésekor számolja a napokat
     </script>
 
 </body>
 </html>
-
-
