@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot</title>
+    <title>Üzenetküldő</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,6 +11,7 @@
             color: #333;
             margin: 0;
             padding: 0;
+            text-align: center;
         }
         #chat-container {
             max-width: 800px;
@@ -58,45 +59,37 @@
             text-align: left;
             font-style: italic;
         }
-        #day-counter {
-            text-align: center;
+        #counter {
+            margin-top: 20px;
             font-size: 18px;
             font-weight: bold;
-            margin-top: 10px;
+            color: #4CAF50;
         }
-        .info-text {
-            text-align: center;
-            margin-bottom: 20px;
+        #header-message {
             font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
+
+    <!-- Chatbox feletti üzenet -->
+    <div id="header-message">Mielőtt felhívnál, kérdezd meg az AI-t, amit erre az esetre hoztam létre :)</div>
+
     <div id="chat-container">
-        <div class="info-text">Mielőtt felhívnál, kérdezd meg az AI-t, amit erre az esetre hoztam létre :)</div>
         <div id="chat-box"></div>
         <input type="text" id="user-input" placeholder="Kérdezz bármit drága :)" />
         <button id="send-btn">Küldés</button>
-        <div id="day-counter"></div>
+        <div id="counter"></div>
     </div>
 
     <script>
-        // Az OpenAI API kulcsod itt
-        const API_KEY = 'sk-ABC123XYZ456defGHI789JKL0';  // Cseréld ki a saját API kulcsodra
-        
         const chatBox = document.getElementById('chat-box');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
-        const dayCounter = document.getElementById('day-counter');
-
-        // Számláló beállítása 2024.08.15-től
-        const startDate = new Date('2024-08-15');
-        function updateCounter() {
-            const currentDate = new Date();
-            const timeDiff = currentDate - startDate;
-            const daysPassed = Math.floor(timeDiff / (1000 * 3600 * 24)); // Napok száma
-            dayCounter.textContent = `Ennyi napja nincs más, aki eszedbe jutna, ha kérdezni akarsz valamit: ${daysPassed}`;
-        }
+        const counter = document.getElementById('counter');
 
         // Üzenet hozzáadása a chathez
         function appendMessage(message, sender = 'user') {
@@ -107,59 +100,58 @@
             chatBox.scrollTop = chatBox.scrollHeight;  // Görgetés az új üzenethez
         }
 
-        // API hívás a ChatGPT-hez
-        async function getChatGPTResponse(userMessage) {
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${API_KEY}`,
-                },
-                body: JSON.stringify({
-                    model: 'gpt-3.5-turbo',  // Az aktuális modell
-                    messages: [
-                        { role: 'system', content: 'Te egy 26 éves fiú vagy, aki mindig egy kicsit szarkasztikus és vicces, de kedves a volt barátnőjével. Mindig a válasz után megkérdezed, hogy érzi magát, és a köszönésed mindig "Szius". Tedd szórakoztatóvá és személyre szabottá a válaszaidat!' },
-                        { role: 'user', content: userMessage },  // A felhasználó üzenete
-                    ],
-                    max_tokens: 150,  // A válasz maximális hossza
-                })
-            });
+        // A napok számolása 2024.08.15. óta
+        function updateDayCounter() {
+            const startDate = new Date('2024-08-15');
+            const currentDate = new Date();
+            const diffTime = currentDate - startDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            counter.textContent = `${diffDays} napja nincs más, aki eszedbe jutna, ha kérdezni akarsz valamit.`;
+        }
 
-            const data = await response.json();
-
-            // Itt kiírjuk a válasz adatokat a konzolra
-            console.log('API válasz:', data);
-
-            // Ha a válasz sikeres, visszaküldjük a válasz tartalmát
-            if (data && data.choices && data.choices[0].message) {
-                return data.choices[0].message.content.trim();
-            } else {
-                console.error('Hiba történt: nincs válasz');
-                return 'Valami hiba történt. Próbáld újra!';
-            }
+        // Az üzenet, amit a bot küld
+        function sendBotResponse() {
+            const responseMessage = `
+                Szia Dorka! Bár jelenleg még nem elérhető az AI (Így is feleslegesen sokat foglalkoztam ezzel), itt van pár oldal, ami minden problémádra megoldás lehet: 
+                
+                - [www.google.com](https://www.google.com)
+                - [www.chatgpt.com](https://www.chatgpt.com)
+                - [www.reddit.com](https://www.reddit.com)
+                - [www.stackoverflow.com](https://www.stackoverflow.com)
+                - [www.quora.com](https://www.quora.com)
+                - [www.wikipedia.org](https://www.wikipedia.org)
+                - [www.howtogeek.com](https://www.howtogeek.com)
+                - [www.medium.com](https://www.medium.com)
+                
+                További szép napot, Szius! 😊
+            `;
+            appendMessage(responseMessage, 'bot');  // Bot válasz
         }
 
         // Eseménykezelő a felhasználó üzenetének elküldéséhez
-        sendBtn.addEventListener('click', async () => {
+        sendBtn.addEventListener('click', () => {
             const userMessage = userInput.value.trim();
             if (userMessage) {
                 appendMessage(userMessage, 'user');  // Felhasználó üzenete
                 userInput.value = '';  // Üzenetmező törlése
-                const botResponse = await getChatGPTResponse(userMessage);  // API hívás
-                appendMessage(botResponse, 'bot');  // AI válasz
+                sendBotResponse();  // Bot válasz
+                updateDayCounter();  // Napok frissítése
             }
         });
 
         // Enter gomb megnyomása
-        userInput.addEventListener('keypress', async (e) => {
+        userInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 sendBtn.click();
             }
         });
 
-        // Napok számlálásának frissítése
-        updateCounter();
-        setInterval(updateCounter, 1000 * 60 * 60 * 24);  // Naponta frissül
+        // Első napok számolása frissítése
+        updateDayCounter();
+
     </script>
+
 </body>
 </html>
+
+
