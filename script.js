@@ -1,4 +1,4 @@
-const API_KEY = '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';  // Cseréld ki a saját API kulcsodra
+const API_KEY = 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;  // Cseréld ki a saját API kulcsodra
 const chatBox = document.getElementById('chat-box');
 const userInput = document.getElementById('user-input');
 const sendBtn = document.getElementById('send-btn');
