@@ -20,6 +20,7 @@
             border: 2px solid #ccc;
             border-radius: 10px;
             background-color: #fff;
+            display: none; /* Elrejtve a felugró ablak elfogadásáig */
         }
         #chat-box {
             height: 300px;
@@ -49,17 +50,6 @@
         #send-btn:hover {
             background-color: #45a049;
         }
-        .message {
-            margin: 10px 0;
-        }
-        .user {
-            text-align: right;
-            font-weight: bold;
-        }
-        .bot {
-            text-align: left;
-            font-style: italic;
-        }
         #counter {
             margin-top: 20px;
             font-size: 18px;
@@ -85,13 +75,54 @@
         .links-list a:hover {
             text-decoration: underline;
         }
-        #daily-quote {
-            margin-top: 20px;
-            font-style: italic;
-            color: #777;
-        }
         .message p {
             margin: 5px 0;
+        }
+
+        /* Felugró ablak stílusai a középső elrendezéshez */
+        #consent-banner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 500px;
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            z-index: 1000;
+            font-size: 18px;
+        }
+        #consent-banner p {
+            margin-bottom: 20px;
+        }
+        #consent-banner button {
+            width: 100px;
+            padding: 10px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+        }
+        #accept-btn {
+            background-color: #4CAF50;
+        }
+        #accept-btn:hover {
+            background-color: #45a049;
+        }
+        #reject-btn {
+            background-color: #f44336;
+        }
+        #reject-btn:hover {
+            background-color: #d32f2f;
         }
     </style>
 </head>
@@ -104,15 +135,26 @@
         <input type="text" id="user-input" placeholder="Kérdezz bármit drága :)" />
         <button id="send-btn">Küldés</button>
         <div id="counter"></div>
-        <div id="daily-quote"></div> <!-- Napi útmutatás -->
+    </div>
+
+    <!-- Felugró ablak tartalom -->
+    <div id="consent-banner">
+        <p>Ezennel elfogadom, hogy nem volt más lehetőségem, mint felkeresni az exem a kérdéseimmel. Ezt tartottam a legjobb ötletnek.</p>
+        <div>
+            <button id="accept-btn">Elfogadás</button>
+            <button id="reject-btn">Elutasítás</button>
+        </div>
     </div>
 
     <script>
+        const chatContainer = document.getElementById('chat-container');
+        const consentBanner = document.getElementById('consent-banner');
+        const acceptBtn = document.getElementById('accept-btn');
+        const rejectBtn = document.getElementById('reject-btn');
         const chatBox = document.getElementById('chat-box');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
         const counter = document.getElementById('counter');
-        const dailyQuote = document.getElementById('daily-quote');
 
         const koans = [
             "A mester megkérdezte a tanítványt: 'Mi a Buddha?' A tanítvány válaszolt: 'A semmi.' Mester: 'Hogyan lehet ez?'",
@@ -126,9 +168,9 @@
         function appendMessage(message, sender = 'user') {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', sender);
-            messageElement.innerHTML = message; // HTML tartalom hozzáadása
+            messageElement.innerHTML = message;
             chatBox.appendChild(messageElement);
-            chatBox.scrollTop = chatBox.scrollHeight;  // Görgetés az új üzenethez
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         function updateDayCounter() {
@@ -154,28 +196,36 @@
                     <li><strong>ChatGPT</strong> - AI segít válaszolni kérdéseidre és segíteni a problémáid megoldásában: <a href="https://www.chatgpt.com" target="_blank">www.chatgpt.com</a></li>
                     <li><strong>Reddit</strong> - A legnagyobb fórum, ahol különböző témákban beszélgethetsz: <a href="https://www.reddit.com" target="_blank">www.reddit.com</a></li>
                     <li><strong>Quora</strong> - Itt különböző kérdésekre kaphatsz válaszokat a világ minden tájáról: <a href="https://www.quora.com" target="_blank">www.quora.com</a></li>
-                    <li><strong>StackOverflow</strong> - Ha programozási problémákkal küzdesz, itt biztosan találhatsz segítséget: <a href="https://www.stackoverflow.com" target="_blank">www.stackoverflow.com</a></li>
-                    <li><strong>Medium</strong> - Érdekes írások és történetek minden témában: <a href="https://www.medium.com" target="_blank">www.medium.com</a></li>
                 </ul>
-
-                <p>További szép napot, Szius! 😊</p>
-
+                
                 <p><strong>Napi útmutatás Lászlótól:</strong></p>
                 <p>"${getRandomKoan()}"</p>
             `;
             appendMessage(responseMessage, 'bot');
         }
 
-        sendBtn.addEventListener('click', function () {
-            const userMessage = userInput.value;
-            appendMessage(userMessage, 'user');
-            userInput.value = '';
-            sendBotResponse();
+        // "Elfogadás" gombra kattintva a felugró ablak eltűnik, és az oldal tartalma elérhetővé válik
+        acceptBtn.addEventListener('click', function() {
+            consentBanner.style.display = 'none';
+            chatContainer.style.display = 'block';
+            updateDayCounter();
         });
 
-        updateDayCounter();  // Az oldal betöltésekor számolja a napokat
+        // "Elutasítás" gombra kattintva a felhasználót átirányítja a YouTube videóra
+        rejectBtn.addEventListener('click', function() {
+            window.location.href = 'https://www.youtube.com/watch?v=JoiJxGNdU8E';
+        });
+
+        // Üzenetküldés a chatbe
+        sendBtn.addEventListener('click', function() {
+            const userMessage = userInput.value.trim();
+            if (userMessage) {
+                appendMessage(userMessage, 'user');
+                userInput.value = '';
+                setTimeout(sendBotResponse, 1000); // Bot válasz késleltetéssel
+            }
+        });
     </script>
 
 </body>
 </html>
-
