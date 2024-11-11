@@ -20,7 +20,6 @@
             border: 2px solid #ccc;
             border-radius: 10px;
             background-color: #fff;
-            display: none; /* Elrejtve a felugró ablak elfogadásáig */
         }
         #chat-box {
             height: 300px;
@@ -50,6 +49,17 @@
         #send-btn:hover {
             background-color: #45a049;
         }
+        .message {
+            margin: 10px 0;
+        }
+        .user {
+            text-align: right;
+            font-weight: bold;
+        }
+        .bot {
+            text-align: left;
+            font-style: italic;
+        }
         #counter {
             margin-top: 20px;
             font-size: 18px;
@@ -75,54 +85,91 @@
         .links-list a:hover {
             text-decoration: underline;
         }
+        #daily-quote {
+            margin-top: 20px;
+            font-style: italic;
+            color: #777;
+        }
         .message p {
             margin: 5px 0;
         }
-
-        /* Felugró ablak stílusai a középső elrendezéshez */
-        #consent-banner {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+        #popup {
+            display: none;
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            max-width: 500px;
-            background-color: #333;
-            color: white;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        #popup-content {
+            background-color: white;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            width: 80%;
             text-align: center;
-            z-index: 1000;
-            font-size: 18px;
         }
-        #consent-banner p {
+        #popup h2 {
+            font-size: 18px;
             margin-bottom: 20px;
         }
-        #consent-banner button {
-            width: 100px;
-            padding: 10px;
+        #popup button {
+            padding: 10px 20px;
             margin: 10px;
+            background-color: #ff4747;
+            color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            color: white;
         }
-        #accept-btn {
+        #popup button:hover {
+            background-color: #d43f3f;
+        }
+        #close-btn {
+            padding: 10px 20px;
             background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
-        #accept-btn:hover {
+        #close-btn:hover {
             background-color: #45a049;
         }
-        #reject-btn {
-            background-color: #f44336;
+        .emoji-btn {
+            margin-top: 10px;
+            cursor: pointer;
         }
-        #reject-btn:hover {
-            background-color: #d32f2f;
+        .reaction-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .reaction-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            text-align: center;
+        }
+        .reaction-content button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .reaction-content button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
@@ -130,31 +177,32 @@
 
     <div id="header-message">Mielőtt felhívnál, kérdezd meg az AI-t, amit erre az esetre hoztam létre :)</div>
 
+    <!-- Popup message before accessing the page -->
+    <div id="popup">
+        <div id="popup-content">
+            <h2>Ezennel elfogadom, hogy nem volt más lehetőségem, mint felkeresni az exem a kérdéseimmel. Ezt tartottam a legjobb ötletnek.</h2>
+           <button id="accept-btn" style="background-color: #4CAF50;">Elfogadás</button>
+            <button id="decline-btn" style="background-color: #ff4747;">Elutasítás</button>
+        </div>
+    </div>
+
     <div id="chat-container">
         <div id="chat-box"></div>
         <input type="text" id="user-input" placeholder="Kérdezz bármit drága :)" />
         <button id="send-btn">Küldés</button>
         <div id="counter"></div>
-    </div>
-
-    <!-- Felugró ablak tartalom -->
-    <div id="consent-banner">
-        <p>Ezennel elfogadom, hogy nem volt más lehetőségem, mint felkeresni az exem a kérdéseimmel. Ezt tartottam a legjobb ötletnek.</p>
-        <div>
-            <button id="accept-btn">Elfogadás</button>
-            <button id="reject-btn">Elutasítás</button>
-        </div>
+        <div id="daily-quote"></div> <!-- Napi útmutatás -->
     </div>
 
     <script>
-        const chatContainer = document.getElementById('chat-container');
-        const consentBanner = document.getElementById('consent-banner');
-        const acceptBtn = document.getElementById('accept-btn');
-        const rejectBtn = document.getElementById('reject-btn');
         const chatBox = document.getElementById('chat-box');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
         const counter = document.getElementById('counter');
+        const dailyQuote = document.getElementById('daily-quote');
+        const popup = document.getElementById('popup');
+        const acceptBtn = document.getElementById('accept-btn');
+        const declineBtn = document.getElementById('decline-btn');
 
         const koans = [
             "A mester megkérdezte a tanítványt: 'Mi a Buddha?' A tanítvány válaszolt: 'A semmi.' Mester: 'Hogyan lehet ez?'",
@@ -168,9 +216,9 @@
         function appendMessage(message, sender = 'user') {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', sender);
-            messageElement.innerHTML = message;
+            messageElement.innerHTML = message; // HTML tartalom hozzáadása
             chatBox.appendChild(messageElement);
-            chatBox.scrollTop = chatBox.scrollHeight;
+            chatBox.scrollTop = chatBox.scrollHeight;  // Görgetés az új üzenethez
         }
 
         function updateDayCounter() {
@@ -192,39 +240,85 @@
                 <p>Bár jelenleg még nem elérhető az AI (Így is feleslegesen sokat foglalkoztam ezzel), itt van pár oldal, ami minden problémádra megoldás lehet:</p>
                 
                 <ul class="links-list">
-                    <li><strong>Google</strong> - Ezt arra tudod használni, hogy bármit kereshetsz az interneten, gyors válaszokért: <a href="https://www.google.com" target="_blank">www.google.com</a></li>
+                    <li><strong>Google</strong> - Ezt arra tudod használni, hogy bármit gyorsan megtalálj: <a href="https://www.google.com" target="_blank">www.google.com</a></li>
                     <li><strong>ChatGPT</strong> - AI segít válaszolni kérdéseidre és segíteni a problémáid megoldásában: <a href="https://www.chatgpt.com" target="_blank">www.chatgpt.com</a></li>
                     <li><strong>Reddit</strong> - A legnagyobb fórum, ahol különböző témákban beszélgethetsz: <a href="https://www.reddit.com" target="_blank">www.reddit.com</a></li>
                     <li><strong>Quora</strong> - Itt különböző kérdésekre kaphatsz válaszokat a világ minden tájáról: <a href="https://www.quora.com" target="_blank">www.quora.com</a></li>
+                    <li><strong>StackOverflow</strong> - Ha programozási problémákkal küzdesz, itt biztosan találhatsz segítséget: <a href="https://www.stackoverflow.com" target="_blank">www.stackoverflow.com</a></li>
+                    <li><strong>Medium</strong> - Érdekes írások és történetek minden témában: <a href="https://www.medium.com" target="_blank">www.medium.com</a></li>
                 </ul>
-                
-                <p><strong>Napi útmutatás:</strong></p>
+
+                <p>További szép napot, Szius! 😊</p>
+
+                <p><strong>Napi útmutatás Lászlótól:</strong></p>
                 <p>"${getRandomKoan()}"</p>
+                <div class="emoji-btn">
+                    <button onclick="showReaction('heart')">❤️</button>
+                    <button onclick="showReaction('laugh')">😂</button>
+                    <button onclick="showReaction('like')">👍</button>
+                </div>
             `;
             appendMessage(responseMessage, 'bot');
         }
 
-        // "Elfogadás" gombra kattintva a felugró ablak eltűnik, és az oldal tartalma elérhetővé válik
-        acceptBtn.addEventListener('click', function() {
-            consentBanner.style.display = 'none';
-            chatContainer.style.display = 'block';
-            updateDayCounter();
-        });
+        function showPopup() {
+            popup.style.display = 'flex';
+        }
 
-        // "Elutasítás" gombra kattintva a felhasználót átirányítja a YouTube videóra
-        rejectBtn.addEventListener('click', function() {
-            window.location.href = 'https://www.youtube.com/watch?v=JoiJxGNdU8E';
-        });
+        function closePopup() {
+            popup.style.display = 'none';
+        }
 
-        // Üzenetküldés a chatbe
-        sendBtn.addEventListener('click', function() {
-            const userMessage = userInput.value.trim();
-            if (userMessage) {
-                appendMessage(userMessage, 'user');
-                userInput.value = '';
-                setTimeout(sendBotResponse, 1000); // Bot válasz késleltetéssel
+        function showReaction(reaction) {
+            let message = '';
+            if (reaction === 'heart') {
+                message = 'Igazán Lemondhatnál már rólam';
+            } else if (reaction === 'laugh') {
+                message = 'Örülök, hogy jól érzed magad';
+            } else if (reaction === 'like') {
+                message = 'Most komolyan? Lájk?';
             }
+            showReactionPopup(message);
+        }
+
+        function showReactionPopup(message) {
+            const reactionPopup = document.createElement('div');
+            reactionPopup.classList.add('reaction-popup');
+            reactionPopup.innerHTML = `
+                <div class="reaction-content">
+                    <h2>${message}</h2>
+                    <button onclick="closeReactionPopup()">Bezárás</button>
+                </div>
+            `;
+            document.body.appendChild(reactionPopup);
+            reactionPopup.style.display = 'flex';
+        }
+
+        function closeReactionPopup() {
+            const reactionPopup = document.querySelector('.reaction-popup');
+            if (reactionPopup) {
+                reactionPopup.style.display = 'none';
+            }
+        }
+
+        acceptBtn.addEventListener('click', function() {
+            closePopup();
+            // Continue to the page
         });
+
+        declineBtn.addEventListener('click', function() {
+            window.location.href = "https://www.youtube.com/watch?v=JoiJxGNdU8E";
+        });
+
+        sendBtn.addEventListener('click', function () {
+            const userMessage = userInput.value;
+            appendMessage(userMessage, 'user');
+            userInput.value = '';
+            sendBotResponse();
+        });
+
+        updateDayCounter();  // Az oldal betöltésekor számolja a napokat
+        showPopup();  // A popup ablak megjelenítése
     </script>
 
 </body>
