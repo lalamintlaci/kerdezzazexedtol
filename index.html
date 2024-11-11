@@ -29,6 +29,7 @@
             margin-bottom: 10px;
             background-color: #f9f9f9;
             border-radius: 5px;
+            text-align: left;
         }
         #user-input {
             width: calc(100% - 60px);
@@ -89,6 +90,9 @@
             font-style: italic;
             color: #777;
         }
+        .message p {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
@@ -111,22 +115,18 @@
         const dailyQuote = document.getElementById('daily-quote');
 
         const koans = [
-            "A szél fúj, de mi az, amit nem érezhetsz?",
-            "Mi a hangja annak a fának, amelyik leesik, ha nincs senki a közelben, hogy meghallja?",
-            "Ha a fa az erdőben eldől, de nincs ott senki, aki hallja, vajon zajt csinál?",
-            "A tó vize tükrözi az eget. De mi van, ha a víz teljesen nyugodt?",
             "A mester megkérdezte a tanítványt: 'Mi a Buddha?' A tanítvány válaszolt: 'A semmi.' Mester: 'Hogyan lehet ez?'",
-            "Egy ember az erdőben bolyongott, mikor egy másik emberre talált, aki az utat keresett. 'Te is utat keresel?' - kérdezte. 'Igen.' 'Miért keresed?' 'Mert nem találom.' 'Akkor meg miért keresel?'",
+            "Mi a hangja annak a fának, amelyik leesik, ha nincs senki a közelben, hogy meghallja?",
+            "A szél fúj, de mi az, amit nem érezhetsz?",
             "Mi történik, amikor a pohár tele van vízzel és a víz nem önthető ki?",
             "A mester azt mondta: 'Amikor a víz üres, akkor mi lesz az?'",
-            "Mi a hangja annak, amikor a tükörben meglátod saját magad?",
-            "Ha a szél fúj a hegytetőn, mit érez a fa?"
+            "Mi a hangja annak, amikor a tükörben meglátod saját magad?"
         ];
 
         function appendMessage(message, sender = 'user') {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', sender);
-            messageElement.textContent = message;
+            messageElement.innerHTML = message; // HTML tartalom hozzáadása
             chatBox.appendChild(messageElement);
             chatBox.scrollTop = chatBox.scrollHeight;  // Görgetés az új üzenethez
         }
@@ -146,23 +146,22 @@
 
         function sendBotResponse() {
             const responseMessage = `
-                Szia Dorka! Bár jelenleg még nem elérhető az AI (Így is feleslegesen sokat foglalkoztam ezzel), itt van pár oldal, ami minden problémádra megoldás lehet:
+                <p><strong>Szia Dorka!</strong></p>
+                <p>Bár jelenleg még nem elérhető az AI (Így is feleslegesen sokat foglalkoztam ezzel), itt van pár oldal, ami minden problémádra megoldás lehet:</p>
+                
+                <ul class="links-list">
+                    <li><strong>Google</strong> - Ezt arra tudod használni, hogy bármit kereshetsz az interneten, gyors válaszokért: <a href="https://www.google.com" target="_blank">www.google.com</a></li>
+                    <li><strong>ChatGPT</strong> - AI segít válaszolni kérdéseidre és segíteni a problémáid megoldásában: <a href="https://www.chatgpt.com" target="_blank">www.chatgpt.com</a></li>
+                    <li><strong>Reddit</strong> - A legnagyobb fórum, ahol különböző témákban beszélgethetsz: <a href="https://www.reddit.com" target="_blank">www.reddit.com</a></li>
+                    <li><strong>Quora</strong> - Itt különböző kérdésekre kaphatsz válaszokat a világ minden tájáról: <a href="https://www.quora.com" target="_blank">www.quora.com</a></li>
+                    <li><strong>StackOverflow</strong> - Ha programozási problémákkal küzdesz, itt biztosan találhatsz segítséget: <a href="https://www.stackoverflow.com" target="_blank">www.stackoverflow.com</a></li>
+                    <li><strong>Medium</strong> - Érdekes írások és történetek minden témában: <a href="https://www.medium.com" target="_blank">www.medium.com</a></li>
+                </ul>
 
-                <div class="links-list">
-                    <p><a href="https://www.google.com" target="_blank">Google</a> - Ezt arra tudod használni, hogy bármit kereshetsz az interneten, gyors válaszokért.</p>
-                    <p><a href="https://www.chatgpt.com" target="_blank">ChatGPT</a> - AI segít válaszolni kérdéseidre és segíteni a problémáid megoldásában.</p>
-                    <p><a href="https://www.reddit.com" target="_blank">Reddit</a> - A legnagyobb fórum, ahol különböző témákban beszélgethetsz.</p>
-                    <p><a href="https://www.quora.com" target="_blank">Quora</a> - Itt különböző kérdésekre kaphatsz válaszokat a világ minden tájáról.</p>
-                    <p><a href="https://www.stackoverflow.com" target="_blank">StackOverflow</a> - Ha programozási problémákkal küzdesz, itt biztosan találhatsz segítséget.</p>
-                    <p><a href="https://www.medium.com" target="_blank">Medium</a> - Érdekes írások és történetek minden témában.</p>
-                </div>
+                <p>További szép napot, Szius! 😊</p>
 
-                További szép napot, Szius! 😊
-
-                <div id="daily-quote">
-                    <strong>Napi útmutatás Lászlótól:</strong>
-                    <p>"${getRandomKoan()}"</p>
-                </div>
+                <p><strong>Napi útmutatás Lászlótól:</strong></p>
+                <p>"${getRandomKoan()}"</p>
             `;
             appendMessage(responseMessage, 'bot');
         }
@@ -179,3 +178,4 @@
 
 </body>
 </html>
+
